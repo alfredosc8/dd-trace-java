@@ -5,14 +5,13 @@ import datadog.trace.api.DDTags;
 import io.opentracing.Span;
 import io.opentracing.tag.Tags;
 import java.net.URI;
-import java.net.URISyntaxException;
 import lombok.extern.slf4j.Slf4j;
 import play.api.mvc.Request;
 import play.api.mvc.Result;
 import scala.Option;
 
 @Slf4j
-public class PlayHttpServerDecorator extends HttpServerDecorator<Request, Result> {
+public class PlayHttpServerDecorator extends HttpServerDecorator<Request, Request, Result> {
   public static final PlayHttpServerDecorator DECORATE = new PlayHttpServerDecorator();
 
   @Override
@@ -31,19 +30,8 @@ public class PlayHttpServerDecorator extends HttpServerDecorator<Request, Result
   }
 
   @Override
-  protected String url(final Request request) {
-    // FIXME: This code is similar to that from the netty integrations.
-    try {
-      URI uri = new URI(request.uri());
-      if ((uri.getHost() == null || uri.getHost().equals("")) && !request.host().isEmpty()) {
-        uri = new URI("http://" + request.host() + request.uri());
-      }
-      return new URI(uri.getScheme(), null, uri.getHost(), uri.getPort(), uri.getPath(), null, null)
-          .toString();
-    } catch (final URISyntaxException e) {
-      log.debug("Cannot parse uri: {}", request.uri());
-      return request.uri();
-    }
+  protected URI url(final Request request) {
+    return URI.create(request.uri());
   }
 
   @Override
@@ -53,7 +41,7 @@ public class PlayHttpServerDecorator extends HttpServerDecorator<Request, Result
 
   @Override
   protected String peerHostIP(final Request request) {
-    return null;
+    return request.remoteAddress();
   }
 
   @Override
