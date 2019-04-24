@@ -20,9 +20,7 @@ import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMap;
 import io.opentracing.util.GlobalTracer;
 import java.net.HttpURLConnection;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
@@ -51,7 +49,6 @@ public class HttpUrlConnectionInstrumentation extends Instrumenter.Default {
       "datadog.trace.agent.decorator.HttpClientDecorator",
       packageName + ".HttpUrlConnectionDecorator",
       HttpUrlConnectionInstrumentation.class.getName() + "$HeadersInjectAdapter",
-      HttpUrlConnectionInstrumentation.class.getName() + "$HeaderExtractAdapter",
       HttpUrlConnectionInstrumentation.class.getName() + "$HttpUrlState",
       HttpUrlConnectionInstrumentation.class.getName() + "$HttpUrlState$1",
     };
@@ -164,32 +161,6 @@ public class HttpUrlConnectionInstrumentation extends Instrumenter.Default {
     }
   }
 
-  public static class HeaderExtractAdapter implements TextMap {
-    private final Map<String, String> headers = new HashMap<String, String>();
-
-    public HeaderExtractAdapter(HttpURLConnection connection) {
-      for (Map.Entry<String, List<String>> header : connection.getHeaderFields().entrySet()) {
-        String value = header.getValue().get(0);
-        String name = header.getKey();
-        //             if (name.startsWith("x-datadog")) {
-        //                 logger.debug("HeaderExtractAdapter:" + name + " - " + value);
-        //             }
-        headers.put(name, value);
-      }
-    }
-
-    @Override
-    public Iterator<Map.Entry<String, String>> iterator() {
-      return headers.entrySet().iterator();
-    }
-
-    @Override
-    public void put(final String key, final String value) {
-      throw new UnsupportedOperationException(
-          "This class should be used only with Tracer.extract()!");
-    }
-  }
-
   public static class HttpUrlState {
 
     public static final String OPERATION_NAME = "http.request";
@@ -206,19 +177,8 @@ public class HttpUrlConnectionInstrumentation extends Instrumenter.Default {
     private volatile boolean finished = false;
 
     public Span startSpan(final HttpURLConnection connection) {
-      // Check if the call is coming from trace enabled
-      //      String trackId = connection.getHeaderField("x-datadog-trace-id");
-      //      if (trackId != null && trackId.trim().length() > 0) {
-      //        final SpanContext extractedContext =
-      //            GlobalTracer.get()
-      //                .extract(Format.Builtin.HTTP_HEADERS, new HeaderExtractAdapter(connection));
-      //
-      //        span =
-      // GlobalTracer.get().buildSpan(OPERATION_NAME).asChildOf(extractedContext).start();
-      //      } else {
       final Tracer.SpanBuilder builder = GlobalTracer.get().buildSpan(OPERATION_NAME);
       span = builder.start();
-      //      }
       try (final Scope scope = GlobalTracer.get().scopeManager().activate(span, false)) {
         DECORATE.afterStart(span);
         DECORATE.onRequest(span, connection);
