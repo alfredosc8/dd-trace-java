@@ -84,6 +84,7 @@ include ':dd-java-agent:instrumentation:spymemcached-2.12'
 include ':dd-java-agent:instrumentation:tomcat-classloading'
 include ':dd-java-agent:instrumentation:trace-annotation'
 include ':dd-java-agent:instrumentation:vertx'
+include ':dd-java-agent:instrumentation:log4j-mdc'
 
 // benchmark
 include ':dd-java-agent:benchmark'

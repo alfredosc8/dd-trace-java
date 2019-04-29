@@ -6,9 +6,9 @@ import org.apache.log4j.MDC
 
 import java.util.concurrent.atomic.AtomicReference
 
-class Slf4jMDCTest extends AgentTestRunner {
+class Log4jMDCTest extends AgentTestRunner {
   static {
-    System.setProperty("dd.logs.injection", "true")
+    System.setProperty("dd.log4j.injection.enabled", "true")
   }
 
   def "mdc shows trace and span ids for active scope"() {

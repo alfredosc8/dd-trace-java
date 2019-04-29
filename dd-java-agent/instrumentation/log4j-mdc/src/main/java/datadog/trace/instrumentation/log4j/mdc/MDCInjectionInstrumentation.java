@@ -33,8 +33,7 @@ public class MDCInjectionInstrumentation extends Instrumenter.Default {
 
   @Override
   protected boolean defaultEnabled() {
-    return Config.getBooleanSettingFromEnvironment(
-        Config.LOGS_INJECTION_ENABLED, Config.DEFAULT_LOGS_INJECTION_ENABLED);
+    return Config.getBooleanSettingFromEnvironment("log4j.injection.enabled", false);
   }
 
   @Override
@@ -76,7 +75,6 @@ public class MDCInjectionInstrumentation extends Instrumenter.Default {
       }
     }
 
-    @Slf4j
     public static class MDCScopeListener implements ScopeListener {
       private final Method putMethod;
       private final Method removeMethod;
@@ -94,7 +92,8 @@ public class MDCInjectionInstrumentation extends Instrumenter.Default {
           putMethod.invoke(
               null, CorrelationIdentifier.getSpanIdKey(), CorrelationIdentifier.getSpanId());
         } catch (final Exception e) {
-          log.debug("Exception setting mdc context", e);
+          org.apache.log4j.Logger.getLogger(MDCScopeListener.class)
+              .debug("Exception setting mdc context", e);
         }
       }
 
@@ -104,7 +103,8 @@ public class MDCInjectionInstrumentation extends Instrumenter.Default {
           removeMethod.invoke(null, CorrelationIdentifier.getTraceIdKey());
           removeMethod.invoke(null, CorrelationIdentifier.getSpanIdKey());
         } catch (final Exception e) {
-          log.debug("Exception removing mdc context", e);
+          org.apache.log4j.Logger.getLogger(MDCScopeListener.class)
+              .debug("Exception removing mdc context", e);
         }
       }
     }

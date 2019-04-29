@@ -2,13 +2,14 @@ apply from: "${rootDir}/gradle/java.gradle"
 
 muzzle {
   pass {
-    group = 'org.apache'
+    group = 'log4j'
     module = 'log4j'
     versions = '(,)'
   }
 }
 
 dependencies {
+  compileOnly group: 'log4j', name: 'log4j', version: '1.2.16'
   compile project(':dd-trace-api')
   compile project(':dd-java-agent:agent-tooling')
 
@@ -20,4 +21,5 @@ dependencies {
   implementation deps.autoservice
 
   testCompile project(':dd-java-agent:testing')
+  testCompile group: 'log4j', name: 'log4j', version: '1.2.16'
 }
